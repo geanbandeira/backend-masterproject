@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste da API de Aulas</title>
+    <style> body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; } .hidden { display: none; } #aulas-content { border: 1px solid #ccc; padding: 10px; margin-top: 20px; } </style>
+</head>
+<body>
+    <h1>Teste da API de Aulas</h1>
+
+    <div id="login-section">
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Usuário (aluno)" value="aluno" required><br><br>
+            <input type="password" id="password" placeholder="Senha (senha123)" value="senha123" required><br><br>
+            <button type="submit">Login</button>
+        </form>
+        <p id="login-error" style="color: red;"></p>
+    </div>
+
+    <div id="content-section" class="hidden">
+        <h2>Conteúdo Protegido</h2>
+        <p>Você está logado! <button id="logout-btn">Sair</button></p>
+        <button id="fetch-aulas-btn">Buscar Aulas</button>
+        <div id="aulas-content">
+            </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
