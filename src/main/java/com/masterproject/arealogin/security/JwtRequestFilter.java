@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -24,8 +25,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+protected void doFilterInternal (request, HttpServletResponse response, FilterChain chain)
+        throws ServletException, IOException { 
 
         final String authorizationHeader = request.getHeader("Authorization");
 
@@ -55,4 +56,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
-}
+
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        throw new UnsupportedOperationException("Unimplemented method 'doFilterInternal'");
+    }} 
