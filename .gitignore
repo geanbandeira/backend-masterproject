@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+# Ignorar pasta de metadados do Eclipse
+/.metadata
+
+# Ignorar pasta de teste do frontend
+/frontend-teste/
