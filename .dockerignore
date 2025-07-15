@@ -1,0 +1,6 @@
+.git
+.gitignore
+.idea
+.metadata
+target/
+frontend-teste/
