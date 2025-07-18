@@ -36,7 +36,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST
             .authorizeHttpRequests(authorize -> authorize
                 // Permite acesso público ao endpoint de login e ao H2 Console (para dev)
-                .requestMatchers("/api/auth/login", "/h2-console/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                 // Qualquer outra requisição sob /api/ exige autenticação
                 .requestMatchers("/api/**").authenticated()
                 // Qualquer outra requisição (fora de /api/) é permitida (ex: /, /index.html)
