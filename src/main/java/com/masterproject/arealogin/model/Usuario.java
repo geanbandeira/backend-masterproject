@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 public class Usuario {
@@ -43,4 +46,16 @@ public class Usuario {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    @ManyToMany
+@JoinTable(
+    name = "matricula_curso",
+    joinColumns = @JoinColumn(name = "usuario_id"),
+    inverseJoinColumns = @JoinColumn(name = "curso_id")
+)
+private java.util.Set<Curso> cursos = new java.util.HashSet<>();
+
+// Getter e Setter
+public java.util.Set<Curso> getCursos() { return cursos; }
+public void setCursos(java.util.Set<Curso> cursos) { this.cursos = cursos; }
 }

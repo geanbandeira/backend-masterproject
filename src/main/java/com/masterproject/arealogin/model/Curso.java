@@ -2,6 +2,8 @@ package com.masterproject.arealogin.model;
 
 import jakarta.persistence.*;
 import java.util.List;
+import jakarta.persistence.ManyToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Curso {
@@ -25,4 +27,13 @@ public class Curso {
     public void setDescricao(String descricao) { this.descricao = descricao; }
     public List<Aula> getAulas() { return aulas; }
     public void setAulas(List<Aula> aulas) { this.aulas = aulas; }
+
+@ManyToMany(mappedBy = "cursos")
+@JsonIgnore // Importante para não criar um loop de dados
+private java.util.Set<Usuario> usuariosMatriculados = new java.util.HashSet<>();
+
+// Getter e Setter
+public java.util.Set<Usuario> getUsuariosMatriculados() { return usuariosMatriculados; }
+public void setUsuariosMatriculados(java.util.Set<Usuario> usuariosMatriculados) { this.usuariosMatriculados = usuariosMatriculados; }
+
 }
