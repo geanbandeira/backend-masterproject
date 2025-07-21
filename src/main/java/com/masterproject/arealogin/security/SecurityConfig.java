@@ -3,6 +3,7 @@ package com.masterproject.arealogin.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // IMPORT NECESSÁRIO
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,11 +36,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST
             .authorizeHttpRequests(authorize -> authorize
-                // Permite acesso público ao endpoint de login e ao H2 Console (para dev)
+                // --- LINHA ADICIONADA PARA CORRIGIR O ERRO DE CORS ---
+                // Permite a "sondagem" (preflight) do navegador
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // O resto das suas regras continua igual
                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                // Qualquer outra requisição sob /api/ exige autenticação
                 .requestMatchers("/api/**").authenticated()
-                // Qualquer outra requisição (fora de /api/) é permitida (ex: /, /index.html)
                 .anyRequest().permitAll()
             )
             // Define a política de sessão como STATELESS. O servidor não guardará estado.
