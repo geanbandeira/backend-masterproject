@@ -31,4 +31,14 @@ public class Aula {
     public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
     public Curso getCurso() { return curso; }
     public void setCurso(Curso curso) { this.curso = curso; }
+
+private boolean gratuita = false; // Por padrão, uma aula não é grátis
+
+// Adicione os Getters e Setters para o novo campo
+public boolean isGratuita() {
+    return gratuita;
+}
+public void setGratuita(boolean gratuita) {
+    this.gratuita = gratuita;
+}
 }

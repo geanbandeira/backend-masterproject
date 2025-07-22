@@ -1,13 +1,8 @@
 package com.masterproject.arealogin.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Usuario {
@@ -22,7 +17,19 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
-    // Getters e Setters
+    // ----- CAMPO ADICIONADO -----
+    private String role; // Ex: "ROLE_USER", "ROLE_ADMIN"
+
+    @ManyToMany
+    @JoinTable(
+        name = "matricula_curso",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "curso_id")
+    )
+    private Set<Curso> cursos = new HashSet<>();
+
+    // --- GETTERS E SETTERS ---
+
     public Long getId() {
         return id;
     }
@@ -47,15 +54,20 @@ public class Usuario {
         this.password = password;
     }
 
-    @ManyToMany
-@JoinTable(
-    name = "matricula_curso",
-    joinColumns = @JoinColumn(name = "usuario_id"),
-    inverseJoinColumns = @JoinColumn(name = "curso_id")
-)
-private java.util.Set<Curso> cursos = new java.util.HashSet<>();
+    public Set<Curso> getCursos() {
+        return cursos;
+    }
 
-// Getter e Setter
-public java.util.Set<Curso> getCursos() { return cursos; }
-public void setCursos(java.util.Set<Curso> cursos) { this.cursos = cursos; }
+    public void setCursos(Set<Curso> cursos) {
+        this.cursos = cursos;
+    }
+
+    // ----- GETTER E SETTER ADICIONADOS PARA CORRIGIR O ERRO -----
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

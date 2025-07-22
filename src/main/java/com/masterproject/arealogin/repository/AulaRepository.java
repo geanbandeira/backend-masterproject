@@ -7,4 +7,5 @@ import java.util.List;
 public interface AulaRepository extends JpaRepository<Aula, Long> {
     // Método customizado para buscar todas as aulas de um curso específico
     List<Aula> findByCursoId(Long cursoId);
+    List<Aula> findByCursoIdAndGratuitaIsTrue(Long cursoId);
 }

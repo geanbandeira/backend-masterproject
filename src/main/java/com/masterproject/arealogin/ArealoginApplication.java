@@ -1,7 +1,9 @@
 package com.masterproject.arealogin;
 
+import com.masterproject.arealogin.model.Aula;
 import com.masterproject.arealogin.model.Curso;
 import com.masterproject.arealogin.model.Usuario;
+import com.masterproject.arealogin.repository.AulaRepository;
 import com.masterproject.arealogin.repository.CursoRepository;
 import com.masterproject.arealogin.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -9,6 +11,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @SpringBootApplication
 public class ArealoginApplication {
@@ -18,11 +22,14 @@ public class ArealoginApplication {
     }
 
     @Bean
-    public CommandLineRunner initData(UsuarioRepository usuarioRepository, CursoRepository cursoRepository,
+    public CommandLineRunner initData(
+            UsuarioRepository usuarioRepository,
+            CursoRepository cursoRepository,
+            AulaRepository aulaRepository, // Adicionado para criar aulas
             PasswordEncoder passwordEncoder) {
         return args -> {
+
             // --- CRIAÇÃO DOS CURSOS ---
-            // Só cria se não houver nenhum curso no banco
             if (cursoRepository.count() == 0) {
                 Curso powerBi = new Curso();
                 powerBi.setTitulo("Power BI");
@@ -40,29 +47,54 @@ public class ArealoginApplication {
                 trilhaMaster.setTitulo("Trilha Master");
                 trilhaMaster.setDescricao("Uma jornada completa para se tornar um especialista em dados.");
 
-                cursoRepository.saveAll(java.util.List.of(powerBi, excelPro, gestaoProjetos, trilhaMaster));
+                cursoRepository.saveAll(List.of(powerBi, excelPro, gestaoProjetos, trilhaMaster));
                 System.out.println("Cursos padrão criados com sucesso!");
             }
 
-            // --- CRIAÇÃO E MATRÍCULA DO USUÁRIO PADRÃO ---
-            // Só cria se o usuário 'aluno' não existir
+            // --- CRIAÇÃO DAS AULAS DE TESTE ---
+            if (aulaRepository.count() == 0 && cursoRepository.count() > 0) {
+                Curso powerBi = cursoRepository.findByTitulo("Power BI").get();
+                
+                Aula aula1 = new Aula();
+                aula1.setTitulo("Aula 1 - Conhecendo a Interface");
+                aula1.setConteudo("Esta é a primeira aula do curso de Power BI. Ela é gratuita para demonstração.");
+                aula1.setGratuita(true); // Marcando a primeira aula como GRÁTIS
+                aula1.setCurso(powerBi);
+
+                Aula aula2 = new Aula();
+                aula2.setTitulo("Aula 2 - Importando e Tratando Dados");
+                aula2.setConteudo("Conteúdo exclusivo para alunos matriculados.");
+                aula2.setCurso(powerBi);
+                
+                aulaRepository.saveAll(List.of(aula1, aula2));
+                System.out.println("Aulas de teste para Power BI criadas.");
+            }
+
+            // --- CRIAÇÃO DOS USUÁRIOS PADRÃO ---
             if (usuarioRepository.findByUsername("aluno").isEmpty()) {
-                // Busca os cursos que acabamos de criar
-                Curso cursoPowerBi = cursoRepository.findByTitulo("Power BI").orElse(null);
-                Curso cursoExcel = cursoRepository.findByTitulo("Excel Pro").orElse(null);
+                Curso cursoPowerBi = cursoRepository.findByTitulo("Power BI").get();
+                Curso cursoExcel = cursoRepository.findByTitulo("Excel Pro").get();
 
                 Usuario aluno = new Usuario();
                 aluno.setUsername("aluno");
                 aluno.setPassword(passwordEncoder.encode("senha123"));
+                aluno.setRole("ROLE_USER"); // Define o papel de usuário comum
 
                 // Matricula o aluno nos cursos
-                if (cursoPowerBi != null)
-                    aluno.getCursos().add(cursoPowerBi);
-                if (cursoExcel != null)
-                    aluno.getCursos().add(cursoExcel);
+                aluno.getCursos().add(cursoPowerBi);
+                aluno.getCursos().add(cursoExcel);
 
                 usuarioRepository.save(aluno);
                 System.out.println("Usuário 'aluno' criado e matriculado em 2 cursos.");
+            }
+            
+            if (usuarioRepository.findByUsername("admin").isEmpty()) {
+                Usuario admin = new Usuario();
+                admin.setUsername("admin");
+                admin.setPassword(passwordEncoder.encode("admin123"));
+                admin.setRole("ROLE_ADMIN"); // Define o papel de administrador
+                usuarioRepository.save(admin);
+                System.out.println("Usuário 'admin' criado.");
             }
         };
     }

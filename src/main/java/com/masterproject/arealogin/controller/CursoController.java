@@ -53,4 +53,10 @@ public class CursoController {
     public List<Aula> listarAulasDoCurso(@PathVariable Long cursoId) {
         return aulaRepository.findByCursoId(cursoId);
     }
+
+    // Cole este novo método dentro da classe CursoController
+@GetMapping("/{cursoId}/aulas-gratis")
+public List<Aula> listarAulasGratisDoCurso(@PathVariable Long cursoId) {
+    return aulaRepository.findByCursoIdAndGratuitaIsTrue(cursoId);
+}
 }
