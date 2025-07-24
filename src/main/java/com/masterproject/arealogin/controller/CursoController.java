@@ -7,6 +7,7 @@ import com.masterproject.arealogin.repository.AulaRepository;
 import com.masterproject.arealogin.repository.CursoRepository;
 import com.masterproject.arealogin.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity; // IMPORT ADICIONADO PARA CORRIGIR O ERRO
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,40 +24,61 @@ public class CursoController {
     @Autowired
     private AulaRepository aulaRepository;
 
-    // ----- INJEÇÃO ADICIONADA -----
-    // Precisamos disso para encontrar o usuário logado
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // ----- MÉTODO ANTIGO REMOVIDO E SUBSTITUÍDO POR ESTE -----
+    /**
+     * Endpoint para listar TODOS os cursos disponíveis no catálogo.
+     */
+    @GetMapping("/catalogo")
+    public List<Curso> listarCatalogoDeCursos() {
+        return cursoRepository.findAll();
+    }
+
     /**
      * Endpoint para listar apenas os cursos em que o usuário logado está matriculado.
      */
     @GetMapping("/meus-cursos")
     public Set<Curso> listarMeusCursos(Principal principal) {
-        // Pega o nome de usuário do token JWT do usuário logado
         String username = principal.getName();
-        
-        // Busca o usuário completo no banco de dados
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + username));
-
-        // Retorna apenas a lista de cursos daquele usuário
         return usuario.getCursos();
     }
 
-    // ----- ESTE MÉTODO CONTINUA IGUAL -----
     /**
-     * Endpoint para listar todas as aulas de um curso específico.
+     * Endpoint para listar todas as aulas de um curso específico (para alunos matriculados).
      */
     @GetMapping("/{cursoId}/aulas")
     public List<Aula> listarAulasDoCurso(@PathVariable Long cursoId) {
         return aulaRepository.findByCursoId(cursoId);
     }
 
-    // Cole este novo método dentro da classe CursoController
-@GetMapping("/{cursoId}/aulas-gratis")
-public List<Aula> listarAulasGratisDoCurso(@PathVariable Long cursoId) {
-    return aulaRepository.findByCursoIdAndGratuitaIsTrue(cursoId);
-}
+    /**
+     * Endpoint para listar apenas as aulas gratuitas de um curso.
+     */
+    @GetMapping("/{cursoId}/aulas-gratis")
+    public List<Aula> listarAulasGratisDoCurso(@PathVariable Long cursoId) {
+        return aulaRepository.findByCursoIdAndGratuitaIsTrue(cursoId);
+    }
+
+    /**
+     * Endpoint para um usuário logado se matricular em um curso.
+     */
+    @PostMapping("/{cursoId}/matricular")
+    public ResponseEntity<?> matricularNoCurso(@PathVariable Long cursoId, Principal principal) {
+        // Encontra o usuário logado
+        Usuario usuario = usuarioRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        // Encontra o curso pelo ID
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
+
+        // Adiciona o curso à lista do usuário e salva
+        usuario.getCursos().add(curso);
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok("Matrícula no curso '" + curso.getTitulo() + "' realizada com sucesso!");
+    }
 }
