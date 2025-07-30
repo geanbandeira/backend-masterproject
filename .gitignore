@@ -36,3 +36,5 @@ build/
 
 # Ignorar pasta de teste do frontend
 /frontend-teste/
+
+application.properties

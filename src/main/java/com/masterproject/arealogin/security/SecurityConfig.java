@@ -3,7 +3,7 @@ package com.masterproject.arealogin.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // IMPORT NECESSÁRIO
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +21,10 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    // INJETADO: O handler que criamos para o sucesso do login com Google
+    @Autowired
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -34,23 +38,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
-                // --- LINHA ADICIONADA PARA CORRIGIR O ERRO DE CORS ---
                 // Permite a "sondagem" (preflight) do navegador
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                // O resto das suas regras continua igual
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
+                
+                // Libera as rotas de autenticação manual E as de OAuth2 do Google
+                .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
+                
+                // Protege as rotas de admin
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // Qualquer outra requisição precisa de autenticação
+                .anyRequest().authenticated()
             )
-            // Define a política de sessão como STATELESS. O servidor não guardará estado.
+            // SEÇÃO ADICIONADA: Ativa e configura o login com Google
+            .oauth2Login(oauth2 -> {
+                oauth2.successHandler(oAuth2LoginSuccessHandler);
+            })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // Adiciona nosso filtro JWT antes do filtro padrão de username/password
-            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-            // Configuração para o H2 Console funcionar (apenas para desenvolvimento)
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
+            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
