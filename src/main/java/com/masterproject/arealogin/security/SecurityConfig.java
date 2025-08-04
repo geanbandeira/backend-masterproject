@@ -23,12 +23,7 @@ public class SecurityConfig {
 
     // INJETADO: O handler que criamos para o sucesso do login com Google
     @Autowired
-    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-}
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; 
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
