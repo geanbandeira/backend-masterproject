@@ -27,80 +27,81 @@ public class ArealoginApplication {
     }
 
     @Bean
-    public CommandLineRunner initData(
-            UsuarioRepository usuarioRepository,
-            CursoRepository cursoRepository,
-            AulaRepository aulaRepository, // Adicionado para criar aulas
-            PasswordEncoder passwordEncoder) {
-        return args -> {
+public CommandLineRunner initData(
+        UsuarioRepository usuarioRepository,
+        CursoRepository cursoRepository,
+        AulaRepository aulaRepository,
+        PasswordEncoder passwordEncoder) {
+    return args -> {
 
-            // --- CRIAÇÃO DOS CURSOS ---
-            if (cursoRepository.count() == 0) {
-                Curso powerBi = new Curso();
-                powerBi.setTitulo("Power BI");
-                powerBi.setDescricao("Domine a ferramenta de Business Intelligence mais poderosa do mercado.");
+        // --- 1. CRIAÇÃO DOS CURSOS ---
+        if (cursoRepository.count() == 0) {
+            System.out.println("Criando cursos padrão...");
+            Curso pbi = new Curso();
+            pbi.setTitulo("Power BI");
+            pbi.setDescricao("Domine a ferramenta de Business Intelligence mais poderosa do mercado.");
 
-                Curso excelPro = new Curso();
-                excelPro.setTitulo("Excel Pro");
-                excelPro.setDescricao("Do básico ao avançado, torne-se um mestre em planilhas.");
+            Curso excel = new Curso();
+            excel.setTitulo("Excel Pro");
+            excel.setDescricao("Do básico ao avançado, torne-se um mestre em planilhas.");
 
-                Curso gestaoProjetos = new Curso();
-                gestaoProjetos.setTitulo("Gestão de Projetos Híbrida");
-                gestaoProjetos.setDescricao("Aprenda a gerenciar projetos com metodologias ágeis e tradicionais.");
+            Curso gestao = new Curso();
+            gestao.setTitulo("Gestão de Projetos Híbrida");
+            gestao.setDescricao("Aprenda a gerenciar projetos com metodologias ágeis e tradicionais.");
 
-                Curso trilhaMaster = new Curso();
-                trilhaMaster.setTitulo("Trilha Master");
-                trilhaMaster.setDescricao("Uma jornada completa para se tornar um especialista em dados.");
+            Curso trilha = new Curso();
+            trilha.setTitulo("Trilha Master");
+            trilha.setDescricao("Uma jornada completa para se tornar um especialista em dados.");
 
-                cursoRepository.saveAll(List.of(powerBi, excelPro, gestaoProjetos, trilhaMaster));
-                System.out.println("Cursos padrão criados com sucesso!");
-            }
+            cursoRepository.saveAll(List.of(pbi, excel, gestao, trilha));
+        }
 
-            // --- CRIAÇÃO DAS AULAS DE TESTE ---
-            if (aulaRepository.count() == 0 && cursoRepository.count() > 0) {
-                Curso powerBi = cursoRepository.findByTitulo("Power BI").get();
-                
-                Aula aula1 = new Aula();
-                aula1.setTitulo("Aula 1 - Conhecendo a Interface");
-                aula1.setConteudo("Esta é a primeira aula do curso de Power BI. Ela é gratuita para demonstração.");
-                aula1.setGratuita(true); // Marcando a primeira aula como GRÁTIS
-                aula1.setCurso(powerBi);
+        // --- 2. CRIAÇÃO DAS AULAS PARA O CURSO DE GESTÃO DE PROJETOS ---
+        if (aulaRepository.count() == 0) {
+            System.out.println("Criando aulas de exemplo...");
+            Curso gestao = cursoRepository.findByTitulo("Gestão de Projetos Híbrida").get();
 
-                Aula aula2 = new Aula();
-                aula2.setTitulo("Aula 2 - Importando e Tratando Dados");
-                aula2.setConteudo("Conteúdo exclusivo para alunos matriculados.");
-                aula2.setCurso(powerBi);
-                
-                aulaRepository.saveAll(List.of(aula1, aula2));
-                System.out.println("Aulas de teste para Power BI criadas.");
-            }
+            Aula aula1 = new Aula();
+            aula1.setTitulo("Aula 1: O que é Gestão Híbrida?");
+            aula1.setConteudo("Nesta aula introdutória, exploramos os conceitos fundamentais...");
+            aula1.setVideoUrl("https://linkdovideodasuaprimeiraula.com");
+            aula1.setGratuita(true); // Marcando a primeira aula como GRÁTIS
+            aula1.setCurso(gestao);
 
-            // --- CRIAÇÃO DOS USUÁRIOS PADRÃO ---
-            if (usuarioRepository.findByUsername("aluno").isEmpty()) {
-                Curso cursoPowerBi = cursoRepository.findByTitulo("Power BI").get();
-                Curso cursoExcel = cursoRepository.findByTitulo("Excel Pro").get();
-
-                Usuario aluno = new Usuario();
-                aluno.setUsername("aluno");
-                aluno.setPassword(passwordEncoder.encode("senha123"));
-                aluno.setRole("ROLE_USER"); // Define o papel de usuário comum
-
-                // Matricula o aluno nos cursos
-                aluno.getCursos().add(cursoPowerBi);
-                aluno.getCursos().add(cursoExcel);
-
-                usuarioRepository.save(aluno);
-                System.out.println("Usuário 'aluno' criado e matriculado em 2 cursos.");
-            }
+            Aula aula2 = new Aula();
+            aula2.setTitulo("Aula 2: Waterfall vs. Agile");
+            aula2.setConteudo("Analisando as diferenças e quando usar cada metodologia...");
+            aula2.setVideoUrl("https://linkdovideodasuasegundaaula.com");
+            aula2.setCurso(gestao);
             
-            if (usuarioRepository.findByUsername("admin").isEmpty()) {
-                Usuario admin = new Usuario();
-                admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("admin123"));
-                admin.setRole("ROLE_ADMIN"); // Define o papel de administrador
-                usuarioRepository.save(admin);
-                System.out.println("Usuário 'admin' criado.");
-            }
-        };
-    }
+            Aula aula3 = new Aula();
+            aula3.setTitulo("Aula 3: Ferramentas para o Gerente Híbrido");
+            aula3.setConteudo("Conheça as principais ferramentas do mercado...");
+            aula3.setVideoUrl("https://linkdovideodasuaterceiraaula.com");
+            aula3.setCurso(gestao);
+
+            aulaRepository.saveAll(List.of(aula1, aula2, aula3));
+        }
+
+        // --- 3. CRIAÇÃO DOS USUÁRIOS PADRÃO ---
+        if (usuarioRepository.findByUsername("aluno").isEmpty()) {
+            Usuario aluno = new Usuario();
+            aluno.setUsername("aluno");
+            aluno.setPassword(passwordEncoder.encode("senha123"));
+            aluno.setRole("ROLE_USER");
+            usuarioRepository.save(aluno);
+            System.out.println("Usuário 'aluno' criado.");
+        }
+        
+        if (usuarioRepository.findByUsername("admin").isEmpty()) {
+            Usuario admin = new Usuario();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole("ROLE_ADMIN");
+            usuarioRepository.save(admin);
+            System.out.println("Usuário 'admin' criado.");
+        }
+    };
+}
+    
 }
