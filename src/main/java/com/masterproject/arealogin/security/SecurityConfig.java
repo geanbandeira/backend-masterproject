@@ -3,6 +3,7 @@ package com.masterproject.arealogin.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,39 +20,51 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
-    // INJETADO: O handler que criamos para o sucesso do login com Google
     @Autowired
-    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; 
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
+    
+    // --- PORTARIA 1: REGRAS PARA A NOSSA API REST (/api/**) ---
+    // Esta portaria tem prioridade (Order(1))
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+            // Aplica estas regras apenas para URLs que começam com /api/
+            .securityMatcher("/api/**")
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
-                // Permite a "sondagem" (preflight) do navegador
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Libera as rotas de autenticação manual E as de OAuth2 do Google
-                .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
-                
-                // Protege as rotas de admin
+                .requestMatchers("/api/auth/**").permitAll() // Login e Registro são públicos
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                // Qualquer outra requisição precisa de autenticação
                 .anyRequest().authenticated()
             )
-            // SEÇÃO ADICIONADA: Ativa e configura o login com Google
-            .oauth2Login(oauth2 -> {
-                oauth2.successHandler(oAuth2LoginSuccessHandler);
-            })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+            
+        return http.build();
+    }
 
+    // --- PORTARIA 2: REGRAS PARA O LOGIN COM GOOGLE E OUTRAS PÁGINAS ---
+    // Esta portaria cuida de todo o resto (Order(2))
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authorize -> authorize
+                // Libera o acesso à raiz e outros recursos, se necessário
+                .requestMatchers("/", "/login.html", "/assets/**").permitAll()
+                // Qualquer outra requisição exige autenticação (neste caso, o fluxo do Google)
+                .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2 -> {
+                oauth2.successHandler(oAuth2LoginSuccessHandler);
+            });
+            
         return http.build();
     }
 }
