@@ -597,7 +597,7 @@ public class ArealoginApplication {
                 admin.setUsername("admin");
                 admin.setPassword(passwordEncoder.encode("adminmaster@pro"));
                 admin.setRole("ROLE_ADMIN");
-                usuarioRepository.save(admin);
+                usuarioRepository.save(admin); 
                 System.out.println("Usuário 'admin' criado.");
             }
         };
