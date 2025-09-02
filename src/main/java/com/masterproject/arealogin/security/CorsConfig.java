@@ -11,8 +11,11 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**") // Aplica-se a todos os endpoints sob /api
                 .allowedOrigins(
+                    // Para testes locais
                     "http://localhost:5500", 
                     "http://127.0.0.1:5500", 
+
+                    // Para o seu site oficial (versões com e sem www, com http e https)
                     "https://www.masterproject.com.br", 
                     "http://www.masterproject.com.br",
                     "https://masterproject.com.br",
