@@ -12,6 +12,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// Importe esta classe
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -27,6 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(withDefaults()) // <-- ADICIONE ESTA LINHA AQUI
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 // Permite a "sondagem" (preflight) do navegador
