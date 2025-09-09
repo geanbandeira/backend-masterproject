@@ -23,30 +23,34 @@ public class SecurityConfig {
     private JwtRequestFilter jwtRequestFilter;
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(withDefaults()) // <-- ADICIONE ESTA LINHA AQUI
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(authorize -> authorize
-                // Permite a "sondagem" (preflight) do navegador
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .cors(withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authorize -> authorize
+                        // Permite a "sondagem" (preflight) do navegador
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Libera as rotas de login e registro
-                .requestMatchers("/api/auth/**").permitAll()
+                        // Libera as rotas de login e registro
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                // Protege as rotas de admin
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // ADICIONE A NOVA REGRA AQUI
+                        // Permite que qualquer usuário autenticado acesse os endpoints de cursos
+                        .requestMatchers("/api/cursos/**").authenticated()
 
-                // Qualquer outra requisição à API precisa de autenticação
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Protege as rotas de admin
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Qualquer outra requisição à API precisa de autenticação
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
