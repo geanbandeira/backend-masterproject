@@ -14,6 +14,9 @@ public class Curso {
     private String titulo;
     private String descricao;
 
+    @Column(unique = true, nullable = false) // Garante que cada curso tenha um apelido único
+    private String slug;
+
     // Relação: Um Curso tem muitas Aulas
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL)
     private List<Aula> aulas;
@@ -27,6 +30,8 @@ public class Curso {
     public void setDescricao(String descricao) { this.descricao = descricao; }
     public List<Aula> getAulas() { return aulas; }
     public void setAulas(List<Aula> aulas) { this.aulas = aulas; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
 @ManyToMany(mappedBy = "cursos")
 @JsonIgnore // Importante para não criar um loop de dados
