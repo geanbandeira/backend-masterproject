@@ -14,6 +14,9 @@ public class Aula {
     private String conteudo;
     private String videoUrl;
 
+    @Column(unique = true)
+    private String slug;
+
     // Relação: Muitas Aulas pertencem a um Curso
     @ManyToOne
     @JoinColumn(name = "curso_id")
@@ -31,6 +34,8 @@ public class Aula {
     public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
     public Curso getCurso() { return curso; }
     public void setCurso(Curso curso) { this.curso = curso; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
 private boolean gratuita = false; // Por padrão, uma aula não é grátis
 
