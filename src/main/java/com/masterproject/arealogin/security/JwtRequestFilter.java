@@ -1,6 +1,6 @@
 package com.masterproject.arealogin.security;
 
-import com.masterproject.arealogin.service.UserDetailsServiceImpl; // Verifique se este é o caminho correto para seu serviço
+import com.masterproject.arealogin.security.UserDetailsServiceImpl; 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
