@@ -1,5 +1,7 @@
 package com.masterproject.arealogin.security;
 
+import com.masterproject.arealogin.service.UserDetailsServiceImpl; // Verifique se este é o caminho correto para seu serviço
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,27 +34,54 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
+        // --- INÍCIO DOS LOGS DE DEPURACÃO ---
+        System.out.println("\n--- [JwtRequestFilter] Processando requisição para: " + request.getRequestURI() + " ---");
+        System.out.println("[JwtRequestFilter] Cabeçalho Authorization: " + authorizationHeader);
+
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                System.out.println("[JwtRequestFilter] Username extraído do token: '" + username + "'");
+            } catch (ExpiredJwtException e) {
+                System.out.println("[JwtRequestFilter] ERRO: O token JWT expirou. Mensagem: " + e.getMessage());
             } catch (Exception e) {
-                logger.warn("Não foi possível extrair o usuário do token JWT", e);
+                System.out.println("[JwtRequestFilter] ERRO ao extrair username do token: " + e.getMessage());
             }
+        } else {
+            System.out.println("[JwtRequestFilter] Token não encontrado ou sem prefixo 'Bearer'.");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            System.out.println("[JwtRequestFilter] Contexto de segurança está nulo. Tentando carregar usuário: '" + username + "'");
 
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                System.out.println("[JwtRequestFilter] UserDetails carregado: '" + userDetails.getUsername() + "' com permissões: " + userDetails.getAuthorities());
+
+                if (jwtUtil.validateToken(jwt, userDetails)) {
+                    System.out.println("[JwtRequestFilter] Token é VÁLIDO.");
+
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    System.out.println("[JwtRequestFilter] Usuário AUTENTICADO e contexto de segurança populado com sucesso.");
+
+                } else {
+                     System.out.println("[JwtRequestFilter] Falha na validação do token.");
+                }
+            } catch (Exception e) {
+                System.out.println("[JwtRequestFilter] ERRO ao carregar UserDetails ou validar token: " + e.getMessage());
             }
+        } else if (username != null) {
+            System.out.println("[JwtRequestFilter] Contexto de segurança NÃO ESTÁ nulo. Usuário já estava autenticado.");
         }
+        
+        System.out.println("--- [JwtRequestFilter] Finalizando filtro e passando para o próximo na cadeia ---");
+        // --- FIM DOS LOGS DE DEPURACÃO ---
 
         chain.doFilter(request, response);
     }
